@@ -9,13 +9,18 @@ import base64
 import requests
 import platform
 import pdfplumber
+import os
 
-if platform.system() == "Windows":
-    pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
-    POPPLER_PATH = r"C:\poppler-23.11.0\Library\bin"
-else:
-    pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"  
-    POPPLER_PATH = None  # Poppler not needed for pdfplumber
+# Install Tesseract on Streamlit Cloud (Linux)
+if platform.system() != "Windows":
+    os.system("apt-get update && apt-get install -y tesseract-ocr")
+
+# Set the Tesseract path
+pytesseract.pytesseract.tesseract_cmd = (
+    r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+    if platform.system() == "Windows"
+    else "/usr/bin/tesseract"
+)
 def set_background(image_url):
     """Sets a background image from a URL using Base64 encoding."""
     response = requests.get(image_url)
