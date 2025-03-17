@@ -10,8 +10,6 @@ import base64
 # Explicitly specify poppler path
 POPPLER_PATH = r"C:\poppler-23.11.0\Library\bin"
 
-def set_background(image_path):
-    
 def set_background(image_url):
     """Sets a background image from a URL using Base64 encoding."""
     response = requests.get(image_url)
