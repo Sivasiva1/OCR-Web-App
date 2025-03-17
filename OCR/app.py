@@ -9,6 +9,9 @@ import requests
 import pdfplumber
 import cv2
 
+# Set the correct path to Tesseract-OCR
+pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+
 def set_background(image_url):
     """Sets a background image from a URL using Base64 encoding."""
     response = requests.get(image_url)
