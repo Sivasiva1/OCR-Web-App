@@ -7,8 +7,16 @@ from docx import Document
 import tempfile
 import base64
 import requests
-# Explicitly specify poppler path
-POPPLER_PATH = r"C:\poppler-23.11.0\Library\bin"
+import platform
+
+# Set Poppler path based on the OS
+if platform.system() == "Windows":
+    POPPLER_PATH = r"C:\poppler-23.11.0\Library\bin"
+else:
+    POPPLER_PATH = "/usr/bin"  # Linux path
+
+# Use it in pdf2image
+images = convert_from_bytes(pdf_bytes.read(), poppler_path=POPPLER_PATH)
 
 def set_background(image_url):
     """Sets a background image from a URL using Base64 encoding."""
