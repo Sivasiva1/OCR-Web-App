@@ -52,12 +52,23 @@ def add_footer():
     </div>
     """
     st.markdown(footer, unsafe_allow_html=True)
-
 def extract_text_from_image(image_bytes):
     """Extracts text from an image using EasyOCR."""
-    image_array = np.frombuffer(image_bytes.read(), np.uint8)
-    text = reader.readtext(image_array, detail=0)  # Get only extracted text
-    return "\n".join(text)
+    try:
+        # Convert bytes to numpy array
+        image_array = np.frombuffer(image_bytes.read(), np.uint8)
+        image = cv2.imdecode(image_array, cv2.IMREAD_COLOR)  # Decode into an image
+
+        # Ensure image is valid
+        if image is None:
+            return "⚠ Error: Invalid image format!"
+
+        # Extract text
+        text = reader.readtext(image, detail=0)
+        return "\n".join(text) if text else "⚠ No text detected!"
+    
+    except Exception as e:
+        return f"⚠ Error extracting text: {str(e)}"
 
 def extract_text_from_pdf(pdf_bytes):
     """Extracts text from a PDF using pdfplumber."""
