@@ -79,7 +79,7 @@ def extract_text_from_docx(docx_bytes):
     return extracted_text
 
 def main():
-    set_background(r"C:\Users\Nagaraja\Documents\Codingsss\Projects\OCR\static\AI-1.jpeg") 
+    set_background("https://raw.githubusercontent.com/Sivasiva1/OCR-Web-App/main/static/AI-1.jpeg")
     st.title("📄 AI-Powered OCR Web App")
     st.write("Upload an **image, PDF, or Word document** to extract text.")
 
