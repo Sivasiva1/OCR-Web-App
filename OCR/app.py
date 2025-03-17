@@ -66,16 +66,15 @@ def extract_text_from_image(image_bytes, lang):
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     text = pytesseract.image_to_string(gray, lang=lang)  
     return text
-
 def extract_text_from_pdf(pdf_bytes, lang):
     """Extracts text from a PDF by converting it to images and applying OCR."""
-    images = convert_from_bytes(pdf_bytes.read())
+    images = convert_from_bytes(pdf_bytes.read(), poppler_path=POPPLER_PATH if platform.system() == "Windows" else None)
     extracted_text = ""
 
     for img in images:
         open_cv_image = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
         gray = cv2.cvtColor(open_cv_image, cv2.COLOR_BGR2GRAY)
-        text = pytesseract.image_to_string(gray, lang=lang)  
+        text = pytesseract.image_to_string(gray, lang=lang)
         extracted_text += text + "\n"
 
     return extracted_text
