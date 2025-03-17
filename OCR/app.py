@@ -6,7 +6,7 @@ from pdf2image import convert_from_bytes
 from docx import Document
 import tempfile
 import base64
-
+import requests
 # Explicitly specify poppler path
 POPPLER_PATH = r"C:\poppler-23.11.0\Library\bin"
 
