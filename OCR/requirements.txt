@@ -5,4 +5,5 @@ numpy==2.2.3
 pdf2image==1.17.0
 python-docx
 pillow==11.1.0
-poppler-utils
+pdfplumber
+
