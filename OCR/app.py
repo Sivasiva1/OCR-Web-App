@@ -10,9 +10,6 @@ import base64
 # Explicitly specify poppler path
 POPPLER_PATH = r"C:\poppler-23.11.0\Library\bin"
 
-# Specify the path to Tesseract-OCR (update this if needed)
-pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
-
 def set_background(image_path):
     """Sets a background image using Base64 encoding."""
     with open(image_path, "rb") as image_file:
@@ -61,7 +58,7 @@ def extract_text_from_image(image_bytes, lang):
 
 def extract_text_from_pdf(pdf_bytes, lang):
     """Extracts text from a PDF by converting it to images and applying OCR."""
-    images = convert_from_bytes(pdf_bytes.read(), poppler_path=POPPLER_PATH)  
+    images = convert_from_bytes(pdf_bytes.read())
     extracted_text = ""
 
     for img in images:
