@@ -1,19 +1,17 @@
 import streamlit as st
-import easyocr
 import numpy as np
+from paddleocr import PaddleOCR, draw_ocr
 from pdf2image import convert_from_bytes
 from docx import Document
 import tempfile
 import base64
 import requests
-import platform
 import pdfplumber
-import os
-import cv2 
+import cv2
 
-reader_en = easyocr.Reader(["en"], gpu=False)
-reader_ta = easyocr.Reader(["ta"], gpu=False)
-
+# Initialize PaddleOCR models for English and Tamil
+ocr_en = PaddleOCR(lang="en")
+ocr_ta = PaddleOCR(lang="ta")
 
 def set_background(image_url):
     """Sets a background image from a URL using Base64 encoding."""
@@ -57,22 +55,23 @@ def add_footer():
     st.markdown(footer, unsafe_allow_html=True)
 
 def extract_text_from_image(image_bytes, lang="en"):
-    """Extracts text from an image using EasyOCR for the specified language."""
+    """Extracts text from an image using PaddleOCR."""
     try:
         # Convert bytes to numpy array
         image_array = np.frombuffer(image_bytes.read(), np.uint8)
         image = cv2.imdecode(image_array, cv2.IMREAD_COLOR)  # Decode into an image
 
-        # Ensure image is valid
         if image is None:
             return "⚠ Error: Invalid image format!"
 
         # Select the appropriate OCR reader
-        reader = reader_en if lang == "en" else reader_ta
+        ocr = ocr_en if lang == "en" else ocr_ta
 
-        # Extract text using EasyOCR
-        text = reader.readtext(image, detail=0)
-        return "\n".join(text) if text else "⚠ No text detected!"
+        # Perform OCR
+        result = ocr.ocr(image, cls=True)
+        text = "\n".join([word_info[1][0] for line in result for word_info in line])
+
+        return text if text else "⚠ No text detected!"
     
     except Exception as e:
         return f"⚠ Error extracting text: {str(e)}"
