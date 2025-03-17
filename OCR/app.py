@@ -10,8 +10,11 @@ import platform
 import pdfplumber
 import os
 import cv2 
-# Initialize EasyOCR Reader
-reader = easyocr.Reader(["en","ta"])  
+
+# Initialize separate OCR Readers for English and Tamil
+reader_en = easyocr.Reader(["en"])  
+reader_ta = easyocr.Reader(["ta"])  
+
 def set_background(image_url):
     """Sets a background image from a URL using Base64 encoding."""
     response = requests.get(image_url)
@@ -52,8 +55,9 @@ def add_footer():
     </div>
     """
     st.markdown(footer, unsafe_allow_html=True)
-def extract_text_from_image(image_bytes):
-    """Extracts text from an image using EasyOCR."""
+
+def extract_text_from_image(image_bytes, lang="en"):
+    """Extracts text from an image using EasyOCR for the specified language."""
     try:
         # Convert bytes to numpy array
         image_array = np.frombuffer(image_bytes.read(), np.uint8)
@@ -63,7 +67,10 @@ def extract_text_from_image(image_bytes):
         if image is None:
             return "⚠ Error: Invalid image format!"
 
-        # Extract text
+        # Select the appropriate OCR reader
+        reader = reader_en if lang == "en" else reader_ta
+
+        # Extract text using EasyOCR
         text = reader.readtext(image, detail=0)
         return "\n".join(text) if text else "⚠ No text detected!"
     
@@ -103,7 +110,7 @@ def main():
         if uploaded_file:
             file_extension = uploaded_file.name.split('.')[-1].lower()
             if file_extension in ["png", "jpg", "jpeg"]:
-                extracted_text = extract_text_from_image(uploaded_file)
+                extracted_text = extract_text_from_image(uploaded_file, lang="en")
             elif file_extension == "pdf":
                 extracted_text = extract_text_from_pdf(uploaded_file)
             elif file_extension == "docx":
@@ -122,7 +129,7 @@ def main():
         if uploaded_file_tam:
             file_extension = uploaded_file_tam.name.split('.')[-1].lower()
             if file_extension in ["png", "jpg", "jpeg"]:
-                extracted_text = extract_text_from_image(uploaded_file_tam)
+                extracted_text = extract_text_from_image(uploaded_file_tam, lang="ta")
             elif file_extension == "pdf":
                 extracted_text = extract_text_from_pdf(uploaded_file_tam)
             elif file_extension == "docx":
