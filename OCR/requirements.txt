@@ -1,0 +1,8 @@
+streamlit
+opencv-python
+pytesseract
+numpy
+pdf2image
+python-docx
+Pillow
+base64
