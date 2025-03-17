@@ -6,6 +6,6 @@ python-docx
 pillow==11.1.0
 pdfplumber
 easyocr
-
+paddleocr
 
 
