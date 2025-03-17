@@ -15,9 +15,6 @@ if platform.system() == "Windows":
 else:
     POPPLER_PATH = "/usr/bin"  # Linux path
 
-# Use it in pdf2image
-images = convert_from_bytes(pdf_bytes.read(), poppler_path=POPPLER_PATH)
-
 def set_background(image_url):
     """Sets a background image from a URL using Base64 encoding."""
     response = requests.get(image_url)
