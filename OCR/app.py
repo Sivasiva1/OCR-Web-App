@@ -50,21 +50,21 @@ def add_footer():
     """
     st.markdown(footer, unsafe_allow_html=True)
 
-def extract_text_from_image(image_bytes):
+def extract_text_from_image(image_bytes, lang="eng"):
     """Extracts text from an image using OpenCV and Pytesseract."""
     try:
-        # Convert bytes to numpy array
         image_array = np.frombuffer(image_bytes.read(), np.uint8)
-        image = cv2.imdecode(image_array, cv2.IMREAD_COLOR)  # Decode into an image
-
+        image = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
+        
         if image is None:
             return "⚠ Error: Invalid image format!"
-
-        # Convert to grayscale and apply OCR
+        
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        text = pytesseract.image_to_string(gray)
-
+        text = pytesseract.image_to_string(gray, lang=lang)
+        
         return text.strip() if text.strip() else "⚠ No text detected!"
+    except pytesseract.TesseractNotFoundError:
+        return "⚠ Tesseract is not installed or not in PATH!"
     except Exception as e:
         return f"⚠ Error extracting text: {str(e)}"
 
@@ -87,27 +87,29 @@ def extract_text_from_docx(docx_bytes):
 
 def main():
     set_background("https://raw.githubusercontent.com/Sivasiva1/OCR-Web-App/main/OCR/static/AI-1.jpeg")
-
+    
     st.title("📄 AI-Powered OCR Web App")
     st.write("Upload an **image, PDF, or Word document** to extract text.")
-
-    # UI: Upload file
+    
+    lang_option = st.radio("Select Language", ("English", "Tamil"))
+    lang_code = "eng" if lang_option == "English" else "tam+eng"
+    
     uploaded_file = st.file_uploader("Upload a file", type=["png", "jpg", "jpeg", "pdf", "docx"])
-
+    
     if uploaded_file:
         file_extension = uploaded_file.name.split('.')[-1].lower()
         if file_extension in ["png", "jpg", "jpeg"]:
-            extracted_text = extract_text_from_image(uploaded_file)
+            extracted_text = extract_text_from_image(uploaded_file, lang=lang_code)
         elif file_extension == "pdf":
             extracted_text = extract_text_from_pdf(uploaded_file)
         elif file_extension == "docx":
             extracted_text = extract_text_from_docx(uploaded_file)
         else:
             extracted_text = "⚠ Unsupported file format!"
-
+        
         st.subheader("📝 Extracted Text:")
         st.text_area("", extracted_text, height=300)
-
+    
     add_footer()
 
 if __name__ == "__main__":
