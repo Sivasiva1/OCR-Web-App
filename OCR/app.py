@@ -11,7 +11,7 @@ import pdfplumber
 import os
 import cv2 
 # Initialize EasyOCR Reader
-reader = easyocr.Reader(["en"])  
+reader = easyocr.Reader(["en","ta"])  
 def set_background(image_url):
     """Sets a background image from a URL using Base64 encoding."""
     response = requests.get(image_url)
