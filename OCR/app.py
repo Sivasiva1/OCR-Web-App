@@ -11,21 +11,28 @@ import base64
 POPPLER_PATH = r"C:\poppler-23.11.0\Library\bin"
 
 def set_background(image_path):
-    """Sets a background image using Base64 encoding."""
-    with open(image_path, "rb") as image_file:
-        encoded_string = base64.b64encode(image_file.read()).decode()
+    
+def set_background(image_url):
+    """Sets a background image from a URL using Base64 encoding."""
+    response = requests.get(image_url)
+    
+    if response.status_code == 200:
+        encoded_string = base64.b64encode(response.content).decode()
+        
+        page_bg_img = f"""
+        <style>
+        .stApp {{
+            background-image: url("data:image/png;base64,{encoded_string}");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }}
+        </style>
+        """
+        st.markdown(page_bg_img, unsafe_allow_html=True)
+    else:
+        st.error("❌ Failed to load background image!")
 
-    page_bg_img = f"""
-    <style>
-    .stApp {{
-        background-image: url("data:image/png;base64,{encoded_string}");
-        background-size: cover;
-        background-position: center;
-        background-attachment: fixed;
-    }}
-    </style>
-    """
-    st.markdown(page_bg_img, unsafe_allow_html=True)
 
 def add_footer():
     """Adds a stylish footer with the team name."""
