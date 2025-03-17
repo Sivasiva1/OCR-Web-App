@@ -8,6 +8,7 @@ import tempfile
 import base64
 import requests
 import platform
+import pdfplumber
 
 if platform.system() == "Windows":
     pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
@@ -67,17 +68,15 @@ def extract_text_from_image(image_bytes, lang):
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     text = pytesseract.image_to_string(gray, lang=lang)  
     return text
+import pdfplumber
+
 def extract_text_from_pdf(pdf_bytes, lang):
-    """Extracts text from a PDF by converting it to images and applying OCR."""
-    images = convert_from_bytes(pdf_bytes.read(), poppler_path=POPPLER_PATH if platform.system() == "Windows" else None)
+    """Extracts text from a PDF using pdfplumber instead of pdf2image."""
     extracted_text = ""
-
-    for img in images:
-        open_cv_image = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
-        gray = cv2.cvtColor(open_cv_image, cv2.COLOR_BGR2GRAY)
-        text = pytesseract.image_to_string(gray, lang=lang)
-        extracted_text += text + "\n"
-
+    with pdfplumber.open(pdf_bytes) as pdf:
+        for page in pdf.pages:
+            extracted_text += page.extract_text() + "\n"
+    
     return extracted_text
 
 def extract_text_from_docx(docx_bytes):
