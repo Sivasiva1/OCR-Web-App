@@ -5,3 +5,4 @@ numpy
 pdf2image
 python-docx
 pillow
+poppler-utils
