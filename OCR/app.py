@@ -11,9 +11,9 @@ import pdfplumber
 import os
 import cv2 
 
-# Initialize separate OCR Readers for English and Tamil
-reader_en = easyocr.Reader(["en"])  
-reader_ta = easyocr.Reader(["ta"])  
+reader_en = easyocr.Reader(["en"], gpu=False)
+reader_ta = easyocr.Reader(["ta"], gpu=False)
+
 
 def set_background(image_url):
     """Sets a background image from a URL using Base64 encoding."""
