@@ -9,7 +9,7 @@ import requests
 import platform
 import pdfplumber
 import os
-
+import cv2 
 # Initialize EasyOCR Reader
 reader = easyocr.Reader(["en"])  
 def set_background(image_url):
