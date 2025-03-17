@@ -1,6 +1,5 @@
 import streamlit as st
-import cv2
-import pytesseract
+import easyocr
 import numpy as np
 from pdf2image import convert_from_bytes
 from docx import Document
@@ -11,23 +10,14 @@ import platform
 import pdfplumber
 import os
 
-# Install Tesseract on Streamlit Cloud (Linux)
-if platform.system() != "Windows":
-    os.system("apt-get update && apt-get install -y tesseract-ocr")
+# Initialize EasyOCR Reader
+reader = easyocr.Reader(["en", "ta"])  # Supports English and Tamil
 
-# Set the Tesseract path
-pytesseract.pytesseract.tesseract_cmd = (
-    r"C:\Program Files\Tesseract-OCR\tesseract.exe"
-    if platform.system() == "Windows"
-    else "/usr/bin/tesseract"
-)
 def set_background(image_url):
     """Sets a background image from a URL using Base64 encoding."""
     response = requests.get(image_url)
-    
     if response.status_code == 200:
         encoded_string = base64.b64encode(response.content).decode()
-        
         page_bg_img = f"""
         <style>
         .stApp {{
@@ -41,7 +31,6 @@ def set_background(image_url):
         st.markdown(page_bg_img, unsafe_allow_html=True)
     else:
         st.error("❌ Failed to load background image!")
-
 
 def add_footer():
     """Adds a stylish footer with the team name."""
@@ -65,22 +54,19 @@ def add_footer():
     """
     st.markdown(footer, unsafe_allow_html=True)
 
-def extract_text_from_image(image_bytes, lang):
-    """Extracts text from an image using Tesseract OCR."""
-    image = cv2.imdecode(np.frombuffer(image_bytes.read(), np.uint8), 1)
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    text = pytesseract.image_to_string(gray, lang=lang)  
-    return text
-import pdfplumber
+def extract_text_from_image(image_bytes):
+    """Extracts text from an image using EasyOCR."""
+    image_array = np.frombuffer(image_bytes.read(), np.uint8)
+    text = reader.readtext(image_array, detail=0)  # Get only extracted text
+    return "\n".join(text)
 
-def extract_text_from_pdf(pdf_bytes, lang):
-    """Extracts text from a PDF using pdfplumber instead of pdf2image."""
+def extract_text_from_pdf(pdf_bytes):
+    """Extracts text from a PDF using pdfplumber."""
     extracted_text = ""
     with pdfplumber.open(pdf_bytes) as pdf:
         for page in pdf.pages:
             extracted_text += page.extract_text() + "\n"
-    
-    return extracted_text
+    return extracted_text if extracted_text else "No text found"
 
 def extract_text_from_docx(docx_bytes):
     """Extracts text from a Word document (.docx)."""
@@ -92,14 +78,13 @@ def extract_text_from_docx(docx_bytes):
     return extracted_text
 
 def main():
-   
     set_background("https://raw.githubusercontent.com/Sivasiva1/OCR-Web-App/main/OCR/static/AI-1.jpeg")
 
     st.title("📄 AI-Powered OCR Web App")
     st.write("Upload an **image, PDF, or Word document** to extract text.")
 
     # UI: Choose language
-    tab1, tab2 = st.tabs(["English OCR ", "Tamil OCR "])
+    tab1, tab2 = st.tabs(["English OCR", "Tamil OCR"])
 
     with tab1:
         st.subheader("📑 Extract Text in English")
@@ -108,9 +93,9 @@ def main():
         if uploaded_file:
             file_extension = uploaded_file.name.split('.')[-1].lower()
             if file_extension in ["png", "jpg", "jpeg"]:
-                extracted_text = extract_text_from_image(uploaded_file, lang="eng")
+                extracted_text = extract_text_from_image(uploaded_file)
             elif file_extension == "pdf":
-                extracted_text = extract_text_from_pdf(uploaded_file, lang="eng")
+                extracted_text = extract_text_from_pdf(uploaded_file)
             elif file_extension == "docx":
                 extracted_text = extract_text_from_docx(uploaded_file)
             else:
@@ -118,7 +103,7 @@ def main():
 
             st.subheader("📝 Extracted Text:")
             st.text_area("", extracted_text, height=300)
-        add_footer() 
+        add_footer()
 
     with tab2:
         st.subheader("📑 Extract Text in Tamil")
@@ -127,9 +112,9 @@ def main():
         if uploaded_file_tam:
             file_extension = uploaded_file_tam.name.split('.')[-1].lower()
             if file_extension in ["png", "jpg", "jpeg"]:
-                extracted_text = extract_text_from_image(uploaded_file_tam, lang="tam")
+                extracted_text = extract_text_from_image(uploaded_file_tam)
             elif file_extension == "pdf":
-                extracted_text = extract_text_from_pdf(uploaded_file_tam, lang="tam")
+                extracted_text = extract_text_from_pdf(uploaded_file_tam)
             elif file_extension == "docx":
                 extracted_text = extract_text_from_docx(uploaded_file_tam)
             else:
@@ -137,6 +122,7 @@ def main():
 
             st.subheader("📝 Extracted Text:")
             st.text_area("", extracted_text, height=300)
-        add_footer() 
+        add_footer()
+
 if __name__ == "__main__":
     main()
