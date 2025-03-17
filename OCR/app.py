@@ -9,11 +9,12 @@ import base64
 import requests
 import platform
 
-# Set Poppler path based on the OS
 if platform.system() == "Windows":
+    pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
     POPPLER_PATH = r"C:\poppler-23.11.0\Library\bin"
 else:
-    POPPLER_PATH = "/usr/bin"  # Linux path
+    pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"
+    POPPLER_PATH = "/usr/bin"
 
 def set_background(image_url):
     """Sets a background image from a URL using Base64 encoding."""
