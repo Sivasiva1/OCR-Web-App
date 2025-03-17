@@ -11,9 +11,7 @@ import pdfplumber
 import os
 
 # Initialize EasyOCR Reader
-#reader = easyocr.Reader(["en"])  # Supports English and Tamil
-reader = easyocr.Reader(["en", "ta"], download_enabled=True)
-
+reader = easyocr.Reader(["en"])  
 def set_background(image_url):
     """Sets a background image from a URL using Base64 encoding."""
     response = requests.get(image_url)
