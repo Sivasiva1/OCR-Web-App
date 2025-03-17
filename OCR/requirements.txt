@@ -1,8 +1,7 @@
 streamlit
-opencv-python
+opencv-python-headless
 pytesseract
 numpy
 pdf2image
 python-docx
-Pillow
-base64
+pillow
