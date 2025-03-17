@@ -1,6 +1,6 @@
 import streamlit as st
 import numpy as np
-from paddleocr import PaddleOCR, draw_ocr
+import pytesseract
 from pdf2image import convert_from_bytes
 from docx import Document
 import tempfile
@@ -8,10 +8,6 @@ import base64
 import requests
 import pdfplumber
 import cv2
-
-# Initialize PaddleOCR models for English and Tamil
-ocr_en = PaddleOCR(lang="en")
-ocr_ta = PaddleOCR(lang="ta")
 
 def set_background(image_url):
     """Sets a background image from a URL using Base64 encoding."""
@@ -54,8 +50,8 @@ def add_footer():
     """
     st.markdown(footer, unsafe_allow_html=True)
 
-def extract_text_from_image(image_bytes, lang="en"):
-    """Extracts text from an image using PaddleOCR."""
+def extract_text_from_image(image_bytes):
+    """Extracts text from an image using OpenCV and Pytesseract."""
     try:
         # Convert bytes to numpy array
         image_array = np.frombuffer(image_bytes.read(), np.uint8)
@@ -64,15 +60,11 @@ def extract_text_from_image(image_bytes, lang="en"):
         if image is None:
             return "⚠ Error: Invalid image format!"
 
-        # Select the appropriate OCR reader
-        ocr = ocr_en if lang == "en" else ocr_ta
+        # Convert to grayscale and apply OCR
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        text = pytesseract.image_to_string(gray)
 
-        # Perform OCR
-        result = ocr.ocr(image, cls=True)
-        text = "\n".join([word_info[1][0] for line in result for word_info in line])
-
-        return text if text else "⚠ No text detected!"
-    
+        return text.strip() if text.strip() else "⚠ No text detected!"
     except Exception as e:
         return f"⚠ Error extracting text: {str(e)}"
 
@@ -99,46 +91,24 @@ def main():
     st.title("📄 AI-Powered OCR Web App")
     st.write("Upload an **image, PDF, or Word document** to extract text.")
 
-    # UI: Choose language
-    tab1, tab2 = st.tabs(["English OCR", "Tamil OCR"])
+    # UI: Upload file
+    uploaded_file = st.file_uploader("Upload a file", type=["png", "jpg", "jpeg", "pdf", "docx"])
 
-    with tab1:
-        st.subheader("📑 Extract Text in English")
-        uploaded_file = st.file_uploader("Upload a file", type=["png", "jpg", "jpeg", "pdf", "docx"], key="eng_file")
+    if uploaded_file:
+        file_extension = uploaded_file.name.split('.')[-1].lower()
+        if file_extension in ["png", "jpg", "jpeg"]:
+            extracted_text = extract_text_from_image(uploaded_file)
+        elif file_extension == "pdf":
+            extracted_text = extract_text_from_pdf(uploaded_file)
+        elif file_extension == "docx":
+            extracted_text = extract_text_from_docx(uploaded_file)
+        else:
+            extracted_text = "⚠ Unsupported file format!"
 
-        if uploaded_file:
-            file_extension = uploaded_file.name.split('.')[-1].lower()
-            if file_extension in ["png", "jpg", "jpeg"]:
-                extracted_text = extract_text_from_image(uploaded_file, lang="en")
-            elif file_extension == "pdf":
-                extracted_text = extract_text_from_pdf(uploaded_file)
-            elif file_extension == "docx":
-                extracted_text = extract_text_from_docx(uploaded_file)
-            else:
-                extracted_text = "⚠ Unsupported file format!"
+        st.subheader("📝 Extracted Text:")
+        st.text_area("", extracted_text, height=300)
 
-            st.subheader("📝 Extracted Text:")
-            st.text_area("", extracted_text, height=300)
-        add_footer()
-
-    with tab2:
-        st.subheader("📑 Extract Text in Tamil")
-        uploaded_file_tam = st.file_uploader("Upload a file", type=["png", "jpg", "jpeg", "pdf", "docx"], key="tam_file")
-
-        if uploaded_file_tam:
-            file_extension = uploaded_file_tam.name.split('.')[-1].lower()
-            if file_extension in ["png", "jpg", "jpeg"]:
-                extracted_text = extract_text_from_image(uploaded_file_tam, lang="ta")
-            elif file_extension == "pdf":
-                extracted_text = extract_text_from_pdf(uploaded_file_tam)
-            elif file_extension == "docx":
-                extracted_text = extract_text_from_docx(uploaded_file_tam)
-            else:
-                extracted_text = "⚠ Unsupported file format!"
-
-            st.subheader("📝 Extracted Text:")
-            st.text_area("", extracted_text, height=300)
-        add_footer()
+    add_footer()
 
 if __name__ == "__main__":
     main()
